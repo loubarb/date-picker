@@ -1,4 +1,4 @@
-import { format, getUnixTime, fromUnixTime, addMonths, sub } from "date-fns"
+import { format, getUnixTime, fromUnixTime, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval } from "date-fns"
 
 const datePickerButton = document.querySelector('.date-picker-button')
 const datePickerCalendar = document.querySelector('.date-picker')
@@ -7,19 +7,8 @@ const date = document.querySelectorAll('.date')
 const forwardMonthButton = document.querySelector('.next-month-button')
 const previousMonthButton = document.querySelector('.prev-month-button')
 const currentMonth = document.querySelector('.current-month')
+let currentDate = new Date()
 
-
-dateNumbers.addEventListener('click', (e) => {
-  // e.currentTarget = grid div
-  date.forEach((date) => {
-    if (e.target.innerText === date.innerText) {
-      date.classList.add('selected')
-      datePickerCalendar.classList.remove('show')
-    } else {
-      date.classList.remove('selected')
-    }
-  })
-})
 
 datePickerButton.addEventListener('click', (e) => {
   datePickerCalendar.classList.toggle('show')
@@ -33,20 +22,33 @@ function setDate(date) {
 }
 
 function setupDatePicker(selectedDate) {
-  currentMonth.innerText = format(selectedDate, 'MMMM - yyyy')
-  setMonth(selectedDate)
+  currentMonth.innerText = format(currentDate, 'MMMM - yyyy')
+  setupDates(selectedDate)
 }
 
-function setMonth(selectedDate) {
-  forwardMonthButton.addEventListener('click', () => {
-    setupDatePicker(addMonths(selectedDate, 1))
-  }, { once: true })
-  previousMonthButton.addEventListener('click', () => {
-    setupDatePicker(sub(selectedDate, {
-      months: 1
-    }))
-  }, {once: true })
+function setupDates(selectedDate) {
+  const firstWeekStart = startOfWeek(startOfMonth(currentDate))
+  const lastWeekEnd = endOfWeek(endOfMonth(currentDate))
+  const dates = eachDayOfInterval({ start: firstWeekStart, end: lastWeekEnd })
+  dateNumbers.innerHTML = ''
+  dates.forEach(date => {
+    const dateElement = document.createElement('button')
+    dateElement.classList.add('date')
+    dateElement.innerText = date.getDate()
+    dateNumbers.appendChild(dateElement)
+  })
 }
+
+
+forwardMonthButton.addEventListener('click', () => {
+  currentDate = addMonths(currentDate, 1)
+  setupDatePicker()
+})
+
+previousMonthButton.addEventListener('click', () => {
+  currentDate = subMonths(currentDate, 1)
+  setupDatePicker()
+})
 
 
 setDate(new Date())
