@@ -1,4 +1,4 @@
-import { format, getUnixTime, fromUnixTime, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval } from "date-fns"
+import { format, getUnixTime, fromUnixTime, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay } from "date-fns"
 
 const datePickerButton = document.querySelector('.date-picker-button')
 const datePickerCalendar = document.querySelector('.date-picker')
@@ -31,23 +31,36 @@ function setupDates(selectedDate) {
   const lastWeekEnd = endOfWeek(endOfMonth(currentDate))
   const dates = eachDayOfInterval({ start: firstWeekStart, end: lastWeekEnd })
   dateNumbers.innerHTML = ''
+
   dates.forEach(date => {
     const dateElement = document.createElement('button')
     dateElement.classList.add('date')
     dateElement.innerText = date.getDate()
+    if (!isSameMonth(date, currentDate)) {
+      dateElement.classList.add('date-picker-other-month-date')
+    }
+    if (isSameDay(date, selectedDate)) {
+      dateElement.classList.add('selected')
+    }
+
+    dateElement.addEventListener('click', () => {
+      setDate(date)
+      datePickerCalendar.classList.remove('show')
+    })
     dateNumbers.appendChild(dateElement)
   })
 }
 
-
 forwardMonthButton.addEventListener('click', () => {
+  const selectedDate = fromUnixTime(datePickerButton.dataset.selectedDate)
   currentDate = addMonths(currentDate, 1)
-  setupDatePicker()
+  setupDatePicker(selectedDate)
 })
 
 previousMonthButton.addEventListener('click', () => {
+  const selectedDate = fromUnixTime(datePickerButton.dataset.selectedDate)
   currentDate = subMonths(currentDate, 1)
-  setupDatePicker()
+  setupDatePicker(selectedDate)
 })
 
 
